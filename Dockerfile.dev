@@ -1,0 +1,23 @@
+# Development Dockerfile with hot reload
+# Usage: Use with docker-compose.dev.yml for development
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install development dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy Prisma schema
+COPY prisma ./prisma
+RUN npx prisma generate
+
+# Copy application source
+COPY . .
+
+# Expose ports for Next.js dev server and debugger
+EXPOSE 3000 3001
+
+# Run development server with hot reload
+CMD ["npm", "run", "dev"]

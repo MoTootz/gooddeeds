@@ -1,0 +1,33 @@
+version: '3.8'
+
+# Development override for docker-compose.yml
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: development
+      DEBUG: 'nextjs:*'
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+      - "3001:3001"  # Alternative port
+    command: npm run dev
+    stdin_open: true
+    tty: true
+
+  postgres:
+    environment:
+      # More verbose logging in development
+      POSTGRES_INITDB_ARGS: "-c log_statement=all"
+    ports:
+      - "5432:5432"  # Expose for development tools
+    volumes:
+      - postgres_data:/var/lib/postgresql/data

@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  name      String
+  bio       String?
+  avatar    String?
+  location  String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  posts     Post[]
+  comments  Comment[]
+  messages  Message[]  @relation("sender")
+  received  Message[]  @relation("receiver")
+}
+
+model Post {
+  id        String     @id @default(cuid())
+  title     String
+  description String
+  type      String     // "offer" or "request"
+  category  String     // "physical", "monetary", "goods", etc.
+  status    String     @default("active") // "active", "completed", "closed"
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  authorId  String
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+}
+
+model Comment {
+  id        String     @id @default(cuid())
+  content   String
+  createdAt DateTime   @default(now())
+
+  postId    String
+  post      Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String     @id @default(cuid())
+  content   String
+  createdAt DateTime   @default(now())
+
+  senderId  String
+  sender    User       @relation("sender", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  receiverId String
+  receiver  User       @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+}
